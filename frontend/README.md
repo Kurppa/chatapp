@@ -1,1 +1,1 @@
-Backend @: https://github.com/Kurppa/convoBackend
+Work in progress. Login, registering and adding friends somewhat working
