@@ -1,20 +1,40 @@
 import gql from 'graphql-tag'
 
-export const USER_DATA = gql`
-    {
-        getUserData {
-            username
-            chats
-            friends {
-                username
-                id
-            }
-        }
-    }
+const FRIEND_FIELDS = gql`
+fragment FriendFields on User {
+    username
+    id
+}
 `
 
-export const ALL_USERNAMES = gql`
-    {
-      getAllUsers
+export const USER_DATA = gql`
+{
+    getUserData {
+        id
+        username
+        chats {
+            id
+            users
+        }
+        friends {
+            ...FriendFields    
+        }
+        friendRequests {
+            ...FriendFields
+        }
+        sentRequests {
+            ...FriendFields
+        }
     }
+}
+${FRIEND_FIELDS}
+`
+
+export const FIND_USER = gql`
+query findUser($searchterm: String!) {
+    findUser(searchterm: $searchterm) {
+        username
+        id
+    }
+}
 `

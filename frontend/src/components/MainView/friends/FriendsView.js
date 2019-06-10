@@ -1,18 +1,19 @@
 import React from 'react'
 import { useMutation } from '@apollo/react-hooks'
-import { ACCEPT_FRIEND } from '../../../graphql/mutations'
+import { ACCEPT_FRIEND, START_CHAT } from '../../../graphql/mutations'
 import { USER_DATA } from '../../../graphql/queries'
 import { Header, Segment, Icon } from 'semantic-ui-react'
 
-const Friends = ( { users } ) => {
+const Friends = ( { users, startConversation } ) => {
   return (
     <>
     <Header as='h2'>Friends</Header>
     {
       users.map(u => (
-        <Segment color='green' style={{ width: '100%' }} key={u.id}>
+        <Segment inverted color='green' style={{ width: '100%' }} key={u.id}>
           <Header style={{ display: 'inline' }} as='h2'>{u.username}</Header>
           <Icon size='big' style={ { float: 'right' } } name='cancel' color='red'/>
+          <Icon onClick={() => startConversation({ variables: { id: u.id } })} size='big' style={ { float: 'right' } } name='chat' />
         </Segment>
       ))  
     }
@@ -58,12 +59,16 @@ const FriendView = ( { data } ) => {
   const [ acceptFriend ] = useMutation(ACCEPT_FRIEND, {
     refetchQueries: [{ query: USER_DATA }]
   })
-  
+
+  const [ startConversation ] = useMutation(START_CHAT, {
+    refetchQueries: [{ query: USER_DATA }]
+  })
+
   return(
     <Segment style={{ width: '100%' }}>
       {
         data.friends.length > 0 ? 
-          <Friends users={data.friends} />
+          <Friends users={data.friends} startConversation={startConversation} />
           : null
       }
       {
@@ -77,7 +82,6 @@ const FriendView = ( { data } ) => {
           : null
       }
     </Segment>
-
   )
 }
 

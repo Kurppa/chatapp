@@ -15,7 +15,6 @@ const RegisterForm = (props) => {
 
   const submit = async (event) => {
     event.preventDefault()
-    console.log(username, password)
     if ( username.length < 1 || password.length < 1) {
       props.setMessage({
         message: 'Please fill all fields', 

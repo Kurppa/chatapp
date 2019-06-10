@@ -1,21 +1,24 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Conversation from './Conversation'
 import FriendBar from './FriendBar'
 import { Grid, Segment } from 'semantic-ui-react'
 
 const ChatView = ({ data }) => {
+  const [ chat, setChat ] = useState(null)
 
   return (
    <>
    <Grid.Column width={4}>
      <Segment>
-       <FriendBar friends={data.getUserData.friends.map(f => ( { username: f.username, id: f.id } ))} />
+       <FriendBar data={data} setChat={setChat} />
      </Segment>
    </Grid.Column>
   <Grid.Column width={12}>
-    <Segment>
-      <Conversation conversation={data.chats}/>
-    </Segment>
+    { chat &&
+      <Segment>
+        <Conversation conversation={data.chats}/>
+      </Segment>
+    }
   </Grid.Column>
   </>
   )

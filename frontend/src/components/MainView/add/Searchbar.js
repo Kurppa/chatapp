@@ -1,39 +1,24 @@
 import React, { useState } from 'react'
 
-import { ALL_USERNAMES } from '../../../graphql/queries'
+import { FIND_USER } from '../../../graphql/queries'
 
-import { Search, Segment, Grid } from 'semantic-ui-react'
+import { Segment, Grid, Input } from 'semantic-ui-react'
 import { useQuery } from '@apollo/react-hooks'
 
-const SearchBar = ({ addFriend, gqlError }) => {
-  const [search, setSearch] = useState(
-    { 
-      isLoading: false,
-      results: [],
-      value: '' 
-    }
-  )
+const SearchBar = ({ setResult }) => {
+  const [value, setValue] = useState(null)
 
-  const { data, loading } = useQuery(ALL_USERNAMES) 
+  const { data, loading } = useQuery(FIND_USER, { variables: { searchterm: value } })  
 
   if (loading) {
     return <div>loading...</div>
-  }
-
-  const handleResultSelect = async (e, { result }) =>  {
-    setSearch( search => ({ ...search, value: result.title }))
-    try {
-      await addFriend({
-        variables: { username: result.title }
-      })
-    } catch (e) {
-      gqlError(e)
-    }
+  } else {
+    setResult(data)
   }
 
   const handleSearchChange = async (e, { value }) => {
     e.preventDefault()
-    setSearch( search => ({ ...search, value, results: data.getAllUsers.filter(d => d.startsWith(value)).map(d => ( { title: d } ))  }) )
+    setValue(value)
   }
 
   return (
@@ -44,13 +29,7 @@ const SearchBar = ({ addFriend, gqlError }) => {
            
           </Grid.Column>
           <Grid.Column>
-            <Search
-              loading={search.isLoading}
-              onResultSelect={handleResultSelect}
-              onSearchChange={handleSearchChange}
-              results={search.results}
-              value={search.value}
-            />
+            <Input value={value} onChange={handleSearchChange} />
           </Grid.Column>  
         </Grid.Row>
       </Grid>

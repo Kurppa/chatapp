@@ -1,47 +1,43 @@
 import React, { useState } from 'react'
 import { useQuery } from '@apollo/react-hooks'
 import { USER_DATA } from '../../graphql/queries'
-import ChatView from './chat/ChatView'
+import Chat from './chat/ChatView'
 import Add from './add/Add'
+import Friends from './friends/FriendsView'
 
 import { Grid, Menu } from 'semantic-ui-react'
 
 const Content = ({ menu, data }) => {
   if (menu === 'chat') {
     return (
-      <ChatView data={data}/>
+      <Chat data={data.getUserData}/>
     )
   } else if (menu === 'friends') {
     return (
-      <div>
-        Friends should show here
-      </div>
+      <Friends data={data.getUserData} />
     )
   } else if (menu === 'add') {
     return (
       <Add />
     )
-  } else {
-    return (
-      <div>
-        nada
-      </div>
-    )
-  }
+  } 
 }
 
 const MainView = () => {
   const [menu, setMenu] = useState('chat')
 
-  const { data, loading } = useQuery(USER_DATA)
+  const { data, loading, error } = useQuery(USER_DATA)
 
   if (loading ) {
     return <div>loading...</div>
   }
 
+  if (error) {
+    console.log(error)
+  }
+
   console.log(data)
 
-  //<SearchBar gqlError={gqlError} addFriend={addFriend} data={udata.getAllUsers} />
   return (
     <Grid>
       <Grid.Row>
