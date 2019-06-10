@@ -6,13 +6,12 @@ const typeDefs = `
     type Chat {
         id: ID!
         users: [ID]!
-        messages: [ID]!
     }
 
     extend type Mutation {
         createChat(
-            username: String!
-        ): Chat
+            id: ID!
+        ): ID
     }
 
 `
@@ -23,17 +22,22 @@ const resolvers = {
             if (!currentUser) {
                 throw new AuthenticationError('not authenticated')
             }
-            const user = await User.findOne({username: args.username})
-            if (user) {
-                const chat = new Chat()
-                chat.users = [user._id, currentUser._id]
+            const friend = await User.findById(args.id)
+                                .populate('chats')
+            if (friend) {
+                const chatExists = friend.chats.map(c => c.users).flat().find(id => id === friend._id)
+                if (chatExists) {
+                    throw new UserInputError('Chat already created')
+                }
+                const chat = new Chat({
+                    users: [friend._id, currentUser._id]
+                })
                 const savedChat = await chat.save()
-                user.chats = user.chats.concat(savedChat._id)
-                await user.save()
-                currentUser.chats = currentUser.chats.concat(savedChat._id)
-                await currentUser.save
-                
-                return chat
+                friend.chats.push(savedChat._id)
+                await friend.save()
+                currentUser.chats.push(savedChat._id)
+                await currentUser.save() 
+                return savedChat._id
             } else {
                 throw new UserInputError('No such user')
             }

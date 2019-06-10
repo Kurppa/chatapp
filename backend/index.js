@@ -16,7 +16,6 @@ const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: async ({ req, res }) => {
-        console.log(req)
         const auth = req ? req.headers.authorization : null
         const id = req.cookies.id
         if (id){

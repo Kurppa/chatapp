@@ -16,6 +16,27 @@ const userSchema = new mongoose.Schema({
             ref: 'User'
         }
     ],
+    friendRequests: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+        
+    ],
+    //blocked not in use rn
+    blockedUsers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+    sentRequests: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+        
+    ],
     chats: [
         {
             type: mongoose.Schema.Types.ObjectId,

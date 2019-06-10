@@ -1,6 +1,6 @@
 const { AuthenticationError } = require('apollo-server-express')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+const argon2 = require('argon2')
 const User = require('../../models/userModel')
 
 const typeDefs = `
@@ -8,7 +8,10 @@ const typeDefs = `
         login(
             username: String!
             password: String!
-        ): String
+        ): Boolean
+        
+        logout: Boolean
+
     }
 `
 
@@ -20,7 +23,7 @@ const resolvers = {
             const passwordCorrect = 
                 user === null
                     ? false
-                    : await bcrypt.compare(args.password, user.passwordHash)
+                    : await argon2.verify(user.passwordHash, args.password)
 
             if (!( user && passwordCorrect )) {
                 throw new AuthenticationError('wrong credentials')
@@ -36,11 +39,18 @@ const resolvers = {
             res.cookie("id", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                maxAge: 1000 * 60 * 60 * 24 * 7
+                maxAge: 1000 * 60 * 60 * 24 * 1 //1 day
             })
 
-            return user.username 
-        }
+            return true
+        },
+        logout: async (root, args, { res, currentUser }) => {
+            if (currentUser) {
+                res.clearCookie("id")
+                return true
+            }
+            return false
+        }  
     }
 }
 

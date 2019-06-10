@@ -1,35 +1,43 @@
 const { AuthenticationError, UserInputError } = require('apollo-server-express')
-const bcrypt = require('bcrypt')
+
+const argon2 = require('argon2')
+
 const User = require('../../models/userModel')
 const Chat = require('../../models/chatModel')
 
 const typeDefs = `
-    type User {
+    type Me {
+        id: ID!
         username: String!
-        friends: [Friend!]
-        chats: [String!]
+        friends: [User!]
+        sentRequests: [User!]
+        friendRequests: [User!]
+        chats: [Chat]
     }
     
-    type Friend {
+    type User {
         username: String!
         id: ID!
     }
 
     extend type Query {
-        getUserData: User!
-        getAllUsers(searchterm: String): [String!]
-        dummy: User
+        getUserData: Me!
+        findUser(searchterm: String): User
     }
 
     extend type Mutation {
         createUser(
             username: String!
             password: String!
-        ): String
+        ): ID
         
+        acceptFriendRequest (
+            id: ID!
+        ): ID
+
         addFriend(
-            username: String!
-        ): String
+            id: ID!
+        ): ID
         
         deleteUser(
             username: String!
@@ -40,11 +48,6 @@ const typeDefs = `
 
 const resolvers = {
     Query: {
-        dummy: async (root, args) => {
-            const user = await User.findOne({ username: 'kara' })
-                    .populate('friends', { username: 1})
-            return user
-        },
         getUserData: async (root, args, { currentUser }) => {
             if (!currentUser) {
                 throw new AuthenticationError('wrong credentials')
@@ -52,24 +55,26 @@ const resolvers = {
             
             return User.findById(currentUser._id)
                 .populate('friends', { username: 1})
-                .populate('chats')
+                .populate('friendRequests', { username: 1})
+                .populate('sentRequests', { username: 1})
+                .populate('chats', { users: 1})
             
         },
-        getAllUsers: async (root, args) => {
+        findUser: async (root, args) => {
             if (args.searchterm) {
-                const searchRegex = { $regex: `^${args.searchterm}`}
-                const users = await User.find({ username: searchRegex })
-                return users.map(u => u.username)
+                //const searchRegex = { $regex: `^${args.searchterm}`}
+                const user = await User.findOne({ username: args.searchterm })
+                return user || null
             } else {
-                const users = await User.find({})
-                return users.map(u => u.username)
+                return null
             }
         } 
     },
     Mutation: {
         createUser: async (root, args) => { 
-            const saltRounds = 10
-            const passwordHash = await bcrypt.hash(args.password, saltRounds)
+            const passwordHash = await argon2.hash(args.password, {
+                type: argon2.argon2id
+            })
             
             const user = new User({ 
                 username: args.username,
@@ -78,23 +83,37 @@ const resolvers = {
 
             const savedUser = await user.save()
 
-            return savedUser.username
+            return savedUser._id
         },
         addFriend: async (root, args, { currentUser }) => {
-            const friend = await User.findOne({ username: args.username })
-            if (!friend) {
+            if (!currentUser) {
+                throw new UserInputError('u are not logged in')
+            } 
+            if (currentUser.sentRequests.find(id => (id.toString() === args.id))) {
+                return null
+            }
+            const friend = await User.findById(args.id)
+            if (!friend ) {
                 throw new UserInputError('no such user')
             }
-            currentUser.friends = currentUser.friends.concat(friend._id)
-            const chat = new Chat({
-                users: [ currentUser.id, friend._id]
-            }) 
-            const savedChat = await chat.save()
-            friend.chats = friend.chats.concat(savedChat._id)
-            currentUser.chats = currentUser.chats.concat(savedChat._id)
+            currentUser.sentRequests.push( friend._id )
             await currentUser.save()
+            friend.friendRequests.push( currentUser._id )
             await friend.save()
             return friend.username
+        },
+        acceptFriendRequest: async (root,args, { currentUser }) => {
+            const friend = await User.findById(args.id)
+            if (friend && !currentUser.friends.find(id => args.id === id.toString())) {
+                currentUser.friends.push(friend._id)
+                currentUser.friendRequests = currentUser.friendRequests.filter(id => id === friend._id)
+                currentUser.save()
+                friend.friends.push(currentUser._id)
+                friend.sentRequests = friend.sentRequests.filter(id => id === currentUser._id)
+                friend.save()
+            } else {
+                throw new UserInputError('wrong user id')
+            }
         },
         deleteUser: async (root, args, context) => {
             return 'not implemented'

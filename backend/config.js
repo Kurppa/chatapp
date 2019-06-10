@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const mongoose = require('mongoose')
 mongoose.set('useCreateIndex', true)
+mongoose.set('useFindAndModify', false)
 
 const MONGODB_URI = process.env.MONGODB_URI
 
