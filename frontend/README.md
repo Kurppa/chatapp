@@ -1,1 +1,1 @@
-Work in progress. Login, registering and adding friends somewhat working
+Work in progress. Login, registering, adding friends and sending messages working
