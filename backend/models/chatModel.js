@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const User = require('./userModel')
+const Message = require('./messageModel')
 
 const chatSchema = new mongoose.Schema({
     users: [{
@@ -12,6 +14,16 @@ const chatSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    }
+})
+
+chatSchema.post('findOneAndDelete', (doc) => {
+    console.log("POST TRIGGERED", doc)
+    if (doc) {
+        doc.users.forEach(uId => {
+            User.update({ _id: uId }, { $pull: { chats: doc._id }})
+        })
+        Message.deleteMany({ chat: doc._id })
     }
 })
 

@@ -46,9 +46,10 @@ const resolvers = {
                 throw new AuthenticationError('not authenticated')
             }
             const friend = await User.findById(args.id)
-                                .populate('chats')
+            
             if (friend) {
-                const chatExists = friend.chats.map(c => c.users).flat().find(id => id === friend._id)
+                const chatExists = await Chat.findOne({ users: { $all: [currentUser._id, friend._id] }})
+
                 if (chatExists) {
                     throw new UserInputError('Chat already created')
                 }

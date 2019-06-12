@@ -1,6 +1,9 @@
 const { AuthenticationError } = require('apollo-server-express')
+const { PubSub, withFilter } = require('graphql-subscriptions')
 const Message = require('../../models/messageModel')
 const Chat = require('../../models/chatModel')
+
+const pubsub = new PubSub()
 
 const typeDefs = `
     type Message {
@@ -12,7 +15,7 @@ const typeDefs = `
     }
     
     type Subscription {
-        newMessage: Message
+        newMessage(chatId: ID!): Message
     }
 
     extend type Mutation {
@@ -43,6 +46,13 @@ const resolvers = {
             })
             
             const savedMessage = await message.save()
+            
+            try {
+            pubsub.publish('MESSAGE_ADDED', { newMessage: savedMessage, chatId: chat._id })
+            } catch (e) {
+                console.log(e)
+            }
+            console.log("PUBLISHEDNEW")
 
             chat.messages.push(savedMessage._id)
 
@@ -50,6 +60,16 @@ const resolvers = {
 
             return savedMessage
     
+        }
+    },
+    Subscription: {
+        newMessage: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['MESSAGE_ADDED']),
+                (payload, variables) => {
+                    return payload.newMessage.chat.toString() === variables.chatId.toString()
+                }
+            )
         }
     }
 }

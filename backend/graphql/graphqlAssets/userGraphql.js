@@ -39,6 +39,10 @@ const typeDefs = `
             id: ID!
         ): ID
         
+        removeFriend(
+            id: ID!
+        ): ID
+
         deleteUser(
             username: String!
             password: String!
@@ -89,12 +93,17 @@ const resolvers = {
             if (!currentUser) {
                 throw new UserInputError('u are not logged in')
             } 
-            if (currentUser.sentRequests.find(id => (id.toString() === args.id))) {
-                return null
+            
+            if(currentUser._id.toString() === args.id.toString()) {
+                return
+            }
+
+            if (currentUser.sentRequests.find(id => (id.toString() === args.id.toString()))) {
+                return
             }
             const friend = await User.findById(args.id)
             if (!friend ) {
-                throw new UserInputError('no such user')
+                throw new UserInputError('Not logged in')
             }
             currentUser.sentRequests.push( friend._id )
             await currentUser.save()
@@ -117,7 +126,30 @@ const resolvers = {
         },
         deleteUser: async (root, args, context) => {
             return 'not implemented'
-        }
+        },
+        removeFriend: async (root, args, { currentUser }) => {
+            if (!currentUser) {
+                throw new UserInputError('Not logged in')
+            }
+            
+            const friend = await User.findById(args.id) 
+            
+            friend.friends = friend.friends.filter(id => id.toString() !== currentUser._id.toString() )
+            currentUser.friends = currentUser.friends.filter(id => id.toString() !== currentUser._id.toString() )
+                
+            await friend.save()
+            await currentUser.save()
+            console.log(friend, currentUser)
+            if (friend) {
+              Chat.findOneAndDelete({ users: {
+                    $all: [ friend._id, currentUser._id ]
+                }}, (error, doc) => {
+                    console.log(error)
+                }) 
+            } 
+
+
+        },
     }
 }
 
