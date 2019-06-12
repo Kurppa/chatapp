@@ -35,7 +35,7 @@ const resolvers = {
             if (!(chat && chat.users.find(id => id.toString() === currentUser._id.toString()))) {
                 throw new AuthenticationError('not authenticated')
             }
-
+    
             return chat.messages
 
         }        

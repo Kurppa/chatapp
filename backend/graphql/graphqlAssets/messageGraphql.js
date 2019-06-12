@@ -52,7 +52,6 @@ const resolvers = {
             } catch (e) {
                 console.log(e)
             }
-            console.log("PUBLISHEDNEW")
 
             chat.messages.push(savedMessage._id)
 
