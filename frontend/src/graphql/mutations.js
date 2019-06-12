@@ -54,4 +54,12 @@ mutation createChat($id: ID!) {
     id: $id,
   )
 }
-` 
+`
+
+export const REMOVE_FRIEND = gql`
+mutation removeFriend($id: ID!) {
+    removeFriend(
+      id: $id,
+    )
+}
+`

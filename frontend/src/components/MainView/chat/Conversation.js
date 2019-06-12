@@ -1,11 +1,15 @@
 import React, { useState } from 'react'
-import { useQuery, useMutation } from '@apollo/react-hooks'
+import { Subscription } from 'react-apollo'
+import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
 import { CHAT_MESSAGES } from '../../../graphql/queries'
 import { SEND_MESSAGE } from '../../../graphql/mutations' 
+import { MESSAGE_SUBSCRIPTION } from '../../../graphql/subscriptions'
 import { Input, Form, Button, Segment } from 'semantic-ui-react'
 
 const Conversation = ( { chat } ) => {
   const [ message, setMessage ] = useState('')
+
+  const client = useApolloClient()
 
   const { data, loading, error } = useQuery(CHAT_MESSAGES, {
     variables: { id: chat }
@@ -19,7 +23,8 @@ const Conversation = ( { chat } ) => {
     return <div>loading...</div>
   }
 
-  console.log(data)
+  const includedIn = (allMessages, newMessage) => 
+    allMessages.map(m => m.id).includes(newMessage.id)
 
   const handleSendMessage = (e) => {
     e.preventDefault()
@@ -28,9 +33,37 @@ const Conversation = ( { chat } ) => {
       setMessage('')
     }
   }
-
+  
   return (
-    <div>
+    <>  
+    <Subscription
+      subscription={MESSAGE_SUBSCRIPTION}
+      variables={{ chatId: chat }}
+      client={client}
+      onSubscriptionData={({ subscriptionData }) => {
+        const newMessage = subscriptionData.data.newMessage
+        
+        const dataInStore = client.readQuery({ 
+          query: CHAT_MESSAGES,
+          variables: {
+            id: chat,
+          } })
+        
+        if (!includedIn(dataInStore.chatMessages, newMessage)) {
+          dataInStore.chatMessages.push(newMessage)
+          client.writeQuery({
+            query: CHAT_MESSAGES,
+            data: dataInStore,
+            variables: {
+              id: chat,
+            }
+          })
+        }
+      }}
+    >
+      {() => null}
+    </Subscription>
+    
       {
         data && data.chatMessages.map(m => <Segment key={m.id}>{m.text}</Segment>)
       }
@@ -39,8 +72,9 @@ const Conversation = ( { chat } ) => {
           <Input style={ { width: 'auto' } } value={message} onChange={({ target }) => setMessage(target.value)} />
           <Button color='blue' style={ { float: 'right' } } type='submit'>send</Button>
         </Form>
-      </div>
-    </div>
+      </div>  
+  </>
+      
   )
 }
 

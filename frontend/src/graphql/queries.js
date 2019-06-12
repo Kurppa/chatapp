@@ -33,6 +33,7 @@ ${FRIEND_FIELDS}
 export const CHAT_MESSAGES = gql`
 query chatMessages($id: ID!) {
     chatMessages(id: $id) {
+        chat
         id
         user
         date
