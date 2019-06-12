@@ -37,6 +37,17 @@ mutation acceptFriendRequest($id: ID!) {
 }
 `
 
+export const SEND_MESSAGE = gql`
+mutation createMessage($chat: ID!, $text: String!) {
+  createMessage(
+    text: $text,
+    chat: $chat
+  ) {
+    id
+  }
+}
+`
+
 export const START_CHAT = gql`
 mutation createChat($id: ID!) {
   createChat(

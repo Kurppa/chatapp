@@ -1,11 +1,17 @@
 const { UserInputError, AuthenticationError } = require('apollo-server-express')
 const Chat = require('../../models/chatModel')
 const User = require('../../models/userModel')
+const Message = require('../../models/messageModel')
 
 const typeDefs = `
     type Chat {
         id: ID!
-        users: [ID]!
+        users: [ID!]!
+        messages: [ID]
+    }
+ 
+    extend type Query {
+        chatMessages(id: ID!): [Message]
     }
 
     extend type Mutation {
@@ -17,6 +23,23 @@ const typeDefs = `
 `
 
 const resolvers = {
+    Query: {
+        chatMessages: async (root, args, { currentUser }) => {
+            if (!currentUser) {
+                throw new AuthenticationError('not authenticated')
+            }
+     
+            const chat = await Chat.findById(args.id)
+                            .populate('messages')
+
+            if (!(chat && chat.users.find(id => id.toString() === currentUser._id.toString()))) {
+                throw new AuthenticationError('not authenticated')
+            }
+
+            return chat.messages
+
+        }        
+    },
     Mutation: {
         createChat: async (root, args, { currentUser }) => {
             if (!currentUser) {

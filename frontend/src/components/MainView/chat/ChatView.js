@@ -16,7 +16,7 @@ const ChatView = ({ data }) => {
   <Grid.Column width={12}>
     { chat &&
       <Segment>
-        <Conversation conversation={data.chats}/>
+        <Conversation chat={chat}/>
       </Segment>
     }
   </Grid.Column>

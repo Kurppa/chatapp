@@ -57,7 +57,7 @@ const resolvers = {
                 .populate('friends', { username: 1})
                 .populate('friendRequests', { username: 1})
                 .populate('sentRequests', { username: 1})
-                .populate('chats', { users: 1})
+                .populate('chats', { users: 1, messages: 1})
             
         },
         findUser: async (root, args) => {

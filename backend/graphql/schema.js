@@ -15,8 +15,9 @@ const Query = `
     }
 
 `
+
 const typeDefs = [ Query, chatTypeDefs, userTypeDefs, messageTypeDefs, loginTypeDefs]
 
-const resolvers = merge(userResolvers, chatResolvers, messageResolvers, loginResolvers)
+const resolvers = merge(chatResolvers, userResolvers,  messageResolvers, loginResolvers)
 
 module.exports = { typeDefs, resolvers }
