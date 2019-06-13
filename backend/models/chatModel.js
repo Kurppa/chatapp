@@ -18,7 +18,6 @@ const chatSchema = new mongoose.Schema({
 })
 
 chatSchema.post('findOneAndDelete', (doc) => {
-    console.log("POST TRIGGERED", doc)
     if (doc) {
         doc.users.forEach(uId => {
             User.update({ _id: uId }, { $pull: { chats: doc._id }})

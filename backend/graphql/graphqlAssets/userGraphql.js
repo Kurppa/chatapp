@@ -135,11 +135,10 @@ const resolvers = {
             const friend = await User.findById(args.id) 
             
             friend.friends = friend.friends.filter(id => id.toString() !== currentUser._id.toString() )
-            currentUser.friends = currentUser.friends.filter(id => id.toString() !== currentUser._id.toString() )
+            currentUser.friends = currentUser.friends.filter(id => id.toString() !== friend._id.toString() )
                 
             await friend.save()
             await currentUser.save()
-            console.log(friend, currentUser)
             if (friend) {
               Chat.findOneAndDelete({ users: {
                     $all: [ friend._id, currentUser._id ]
