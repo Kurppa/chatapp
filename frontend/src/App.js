@@ -24,22 +24,23 @@ const App = () => {
 
   return (
     <Router>
-      <Menu>
-        <Menu.Item style={{ fontSize: '20px' }} header as={Link} to='/'>
+      <Container>
+        <Menu >
+          <Menu.Item style={{ fontSize: '20px' }} header as={Link} to='/'>
           ChatApp
-        </Menu.Item>
-        {
-          user ? 
-            <Menu.Menu position='right'>
-              <Menu.Item
-                name='logout'
-                onClick={() => logoutHandler()}
-              />
-            </Menu.Menu>
-            : null
-        }
-      </Menu>
-      <Container style={ { marginTop: '5rem' } }> 
+          </Menu.Item>
+          {
+            user ? 
+              <Menu.Menu position='right'>
+                <Menu.Item
+                  name='logout'
+                  onClick={() => logoutHandler()}
+                />
+              </Menu.Menu>
+              : null
+          }
+        </Menu>
+       
         {
           user
             ? <MainView />

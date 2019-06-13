@@ -24,12 +24,11 @@ const Add = () => {
     addFriend({ variables: { id: data.findUser.id } })
     setValue('')
   }
-
+    
   return (
     <>
       <Segment style={{ width: '100%' }}>
         <Header style={{ display: 'inline' }} as='h3'>Find user: </Header><Input style={{ float: 'right', display: 'inline' }} value={value} onChange={handleSearchChange} />
-      </Segment>
       {
         loading ? 
           <Segment style={{ width: '100%' }}></Segment>
@@ -39,7 +38,6 @@ const Add = () => {
               <p key={data.findUser.id}>{data.findUser.username}</p> 
               : null
             }
-          </Segment>
       }
     </>
   )

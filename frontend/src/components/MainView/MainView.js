@@ -5,12 +5,12 @@ import Chat from './chat/ChatView'
 import Add from './add/Add'
 import Friends from './friends/FriendsView'
 
-import { Grid, Menu } from 'semantic-ui-react'
+import { Container, Menu } from 'semantic-ui-react'
 
 const Content = ({ menu, data }) => {
   if (menu === 'chat') {
     return (
-      <Chat data={data.getUserData}/>
+      <Chat data={data.getUserData} />
     )
   } else if (menu === 'friends') {
     return (
@@ -32,37 +32,30 @@ const MainView = () => {
     return <div>loading...</div>
   }
 
-  if (error) {
-    console.log(error)
-  }
-
   console.log(data)
 
   return (
-    <Grid>
-      <Grid.Row>
-        <Menu widths={3}>
-          <Menu.Item 
-            name='chat'
-            active={menu === 'chat'} 
-            onClick={() => setMenu('chat')}
-          />
-          <Menu.Item
-            name='friends'
-            active={menu === 'friends'}
-            onClick={() => setMenu('friends')}
-          />
-          <Menu.Item
-            name='add'
-            active={menu === 'add'}
-            onClick={() => setMenu('add')}
-          />
-        </Menu>
-      </Grid.Row>
-      
+    <Container>
+      <Menu widths={3}>
+        <Menu.Item 
+          name='chat'
+          active={menu === 'chat'} 
+          onClick={() => setMenu('chat')}
+        />
+        <Menu.Item
+          name='friends'
+          active={menu === 'friends'}
+          onClick={() => setMenu('friends')}
+        />
+        <Menu.Item
+          name='add'
+          active={menu === 'add'}
+          onClick={() => setMenu('add')}
+        />
+      </Menu>
+        
       <Content menu={menu} data={data} />
-      
-    </Grid>
+    </Container>
   )
 }
 

@@ -7,20 +7,22 @@ const ChatView = ({ data }) => {
   const [ chat, setChat ] = useState(null)
 
   return (
-   <>
-   <Grid.Column width={4}>
-     <Segment>
-       <FriendBar data={data} setChat={setChat} />
-     </Segment>
-   </Grid.Column>
-  <Grid.Column width={12}>
-    { chat &&
-      <Segment>
-        <Conversation chat={chat}/>
-      </Segment>
-    }
-  </Grid.Column>
-  </>
+    <Grid style={{ height: '80vh' }}>
+      <Grid.Row stretched>
+        <Grid.Column width={4}>
+          <Segment>
+            <FriendBar data={data} setChat={setChat} />
+          </Segment>
+        </Grid.Column>
+        <Grid.Column style={{ height: '100%' }} width={12}>
+          { chat &&
+          <Segment >
+            <Conversation me={data} chat={chat}/>
+          </Segment>
+          }
+        </Grid.Column>
+      </Grid.Row>
+    </Grid>
   )
 }
 
