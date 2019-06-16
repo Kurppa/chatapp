@@ -26,13 +26,11 @@ const Content = ({ menu, data }) => {
 const MainView = () => {
   const [menu, setMenu] = useState('chat')
 
-  const { data, loading, error } = useQuery(USER_DATA)
+  const { data, loading } = useQuery(USER_DATA)
 
   if (loading ) {
     return <div>loading...</div>
   }
-
-  console.log(data)
 
   return (
     <Container>
@@ -53,7 +51,6 @@ const MainView = () => {
           onClick={() => setMenu('add')}
         />
       </Menu>
-        
       <Content menu={menu} data={data} />
     </Container>
   )

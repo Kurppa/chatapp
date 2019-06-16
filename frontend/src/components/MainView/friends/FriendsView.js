@@ -30,7 +30,6 @@ const SentRequests = ( { users } ) => {
         <Segment color='blue' style={{ width: '100%' }} key={u.id}>
           <Header style={{ display: 'inline' }} as='h2'>{u.username}</Header> 
           <Icon size='big' style={ { float: 'right' } } name='cancel' color='red'/>
-          <Icon size='big' style={ { float: 'right' } } name='checkmark' color='green' />
         </Segment>
       ))  
     }

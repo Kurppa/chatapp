@@ -16,6 +16,7 @@ const App = () => {
   const client = useApolloClient()
 
   //maybe useEffect to autologin here
+  
   const logoutHandler = () => {
     logout()
     client.clearStore()
