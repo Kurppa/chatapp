@@ -1,3 +1,4 @@
+const https = require('https')
 const http = require('http')
 const { ApolloServer, AuthenticationError } = require('apollo-server-express')
 const express = require('express')
@@ -5,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 
+const path = require('path')
 const jwt = require('jsonwebtoken')
 const User = require('./models/userModel')
 
@@ -14,7 +16,15 @@ const { typeDefs, resolvers} = require('./graphql/schema')
 
 const testRouter = require('./controllers/testController')
 
-const server = new ApolloServer({ 
+const configurations = {
+  production: { ssl: true, port: 3000, hostname: 'paff.me' },
+  development: { ssl: false, port: 3000, hostname: 'localhost' }
+}
+
+const environment = process.env.NODE_ENV || 'production'
+const config = configurations[environment]
+
+const apollo = new ApolloServer({ 
     typeDefs,
     resolvers,
     subscriptions: {
@@ -55,32 +65,50 @@ const server = new ApolloServer({
 const app = express()
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://paff.me',
     credentials: true
 }))
 
 app.use(cookieParser())
 
-app.use('/', testRouter) //just says hello world : ) 
-
 app.use(morgan('tiny'))
 
-server.applyMiddleware({ 
+app.use('/static', express.static(path.join(__dirname, './build/static')))
+
+app.get('/', (req, res, next) => {
+    try {
+        if (req.cookies.id) {
+            const decodedToken = jwt.verify(
+                req.cookies.id, process.env.SECRET
+            )
+            if (decodedToken.id) {
+                res.redirect('/user')
+            }
+        } else {
+            next()
+        }
+    } catch (e) {
+        next();
+    }
+})
+
+app.get('*', (req, res) => {
+	res.sendFile('index.html', { root: path.join(__dirname, './build/')})
+})
+
+apollo.applyMiddleware({ 
     app,
     cors: false,
 })
 
-const httpServer = http.createServer(app)
+let server = http.createServer(app)
 
-server.installSubscriptionHandlers(httpServer)
-
-const PORT = process.env.PORT || 3000
+apollo.installSubscriptionHandlers(server)
 
 connectDb()
     .then(async () => {
-        httpServer.listen(PORT, () => {
-            console.log(`GraphQl endpoint at http://localhost:${PORT}${server.graphqlPath}`)
-            console.log(`Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`)
+        server.listen({ port: config.port }, () => {
+             `http${config.ssl ? 's' : ''}://${config.hostname}:${config.port}${apollo.graphqlPath}`   
         }
         )
     })
