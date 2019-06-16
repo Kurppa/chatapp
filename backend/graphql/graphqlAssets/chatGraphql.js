@@ -28,7 +28,7 @@ const resolvers = {
             if (!currentUser) {
                 throw new AuthenticationError('not authenticated')
             }
-     
+            
             const chat = await Chat.findById(args.id)
                             .populate('messages')
 

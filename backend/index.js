@@ -1,5 +1,5 @@
 const http = require('http')
-const { ApolloServer } = require('apollo-server-express')
+const { ApolloServer, AuthenticationError } = require('apollo-server-express')
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
@@ -8,6 +8,7 @@ const morgan = require('morgan')
 const jwt = require('jsonwebtoken')
 const User = require('./models/userModel')
 
+const { validateToken, findUser, findTokenFromWS } = require('./helpers')
 const { connectDb } = require('./config')
 const { typeDefs, resolvers} = require('./graphql/schema')
 
@@ -16,6 +17,22 @@ const testRouter = require('./controllers/testController')
 const server = new ApolloServer({ 
     typeDefs,
     resolvers,
+    subscriptions: {
+        onConnect: async (_, ws) => {
+            // try to get id token -> check that token is valid and decode -> find user
+            // rejected promise results in failed subscription
+            // approach quarantees that subscription resolver has always user available
+            // and that only logged in users can subscribe to newMessage
+            return findTokenFromWS(ws.upgradeReq)
+                        .then(idCookie => validateToken(idCookie))
+                        .then(token => findUser(token.id))
+                        .then( user => {
+                            return {
+                                currentUser: user
+                            }
+                        })
+        }
+    },
     context: async ({ req, res, connection }) => {
         if (connection) {
             return connection.context

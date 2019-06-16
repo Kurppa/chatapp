@@ -43,6 +43,10 @@ const typeDefs = `
             id: ID!
         ): ID
 
+        cancelFriendRequest(
+            id: ID!
+        ): ID
+
         deleteUser(
             username: String!
             password: String!
@@ -129,7 +133,7 @@ const resolvers = {
         },
         removeFriend: async (root, args, { currentUser }) => {
             if (!currentUser) {
-                throw new UserInputError('Not logged in')
+                throw new AuthenticationError('Not logged in')
             }
             
             const friend = await User.findById(args.id) 
@@ -146,9 +150,27 @@ const resolvers = {
                     console.log(error)
                 }) 
             } 
-
-
         },
+        cancelFriendRequest: async (root, args, { currentUser }) => {
+            if (!currentUser) {
+                throw new AuthenticationError('Not logged in')
+            }
+            
+            const friend = await User.findById(args.id)
+
+            if (!friend) {
+                throw new UserInputError('No such user')    
+            }
+
+            friend.chats = friend.friendRequests.filter(id => id.toString() !== currentUser._id.toString())
+            await friend.save()
+
+            currentUser.sentRequests = currentUser.sentRequests.filter(id => id.toString !== friend._id.toString())
+            await currentUser.save()
+
+            return friend._id
+            
+        }
     }
 }
 

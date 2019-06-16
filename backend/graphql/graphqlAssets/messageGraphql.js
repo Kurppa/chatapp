@@ -36,7 +36,7 @@ const resolvers = {
             const chat = await Chat.findById(args.chat)
             
             if (!(chat && chat.users.find(id => id.toString() === currentUser._id.toString()))) {
-                throw new AuthenticationError('Not such chat')
+                throw new UserInputError('Not such chat')
             }
             
             const message = new Message({
@@ -65,8 +65,15 @@ const resolvers = {
         newMessage: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(['MESSAGE_ADDED']),
-                (payload, variables) => {
-                    return payload.newMessage.chat.toString() === variables.chatId.toString()
+                (payload, variables, { currentUser }) => {
+                    if (!currentUser) {
+                        return false
+                    }
+                    const chatIdList = currentUser.chats.map(c => c.toString())
+                    if (chatIdList.includes(variables.chatId.toString())) {
+                        return payload.newMessage.chat.toString() === variables.chatId.toString()
+                    }
+                    return false
                 }
             )
         }
