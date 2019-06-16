@@ -7,7 +7,7 @@ import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
 import { Segment, Message } from 'semantic-ui-react'
 
-const LoginPage = ({ setUser }) => {
+const LoginPage = () => {
   const [message, setMessage] = useState(null)
   const [infoMessage, setInfoMessage] = useState(false)
 
@@ -64,7 +64,6 @@ const LoginPage = ({ setUser }) => {
       }
       <Route exact path='/' render={() => (
         <LoginForm 
-          setUser={setUser}
           setMessage={handleMessage}
           graphqlError={graphqlError}
         />

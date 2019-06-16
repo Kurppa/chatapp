@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
-
+import { BrowserRouter as Router } from 'react-router-dom'
 import ApolloClient from 'apollo-client'
 import { ApolloProvider } from '@apollo/react-hooks'
 import { split } from 'apollo-link' 
@@ -43,7 +43,9 @@ const client = new ApolloClient({
 
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <App />
+    <Router>
+      <App />
+    </Router>
   </ApolloProvider>,
   document.getElementById('root')
 )

@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { 
-  BrowserRouter as Router,
+import {
+  Route,
+  Switch, 
+  withRouter,
   Link,
 } from 'react-router-dom'
 import { useMutation, useApolloClient } from '@apollo/react-hooks'
@@ -9,7 +11,7 @@ import LoginPage from './components/LoginPage/LoginPage'
 import MainView from './components/MainView/MainView'
 import { Container, Menu } from 'semantic-ui-react'
 
-const App = () => {
+const App = (props) => {
   const [user, setUser] = useState(null)
   const [logout] = useMutation(LOGOUT)
 
@@ -21,37 +23,37 @@ const App = () => {
     logout()
     client.clearStore()
     setUser(null)
+    props.history.push('/')
   }
 
   return (
-    <Router>
-      <Container>
-        <Menu >
-          <Menu.Item style={{ fontSize: '20px' }} header as={Link} to='/'>
-          ChatApp
-          </Menu.Item>
-          {
-            user ? 
-              <Menu.Menu position='right'>
-                <Menu.Item
-                  name='logout'
-                  onClick={() => logoutHandler()}
-                />
-              </Menu.Menu>
-              : null
-          }
-        </Menu>
-       
+    <Container>
+      <Menu >
+        <Menu.Item style={{ fontSize: '20px' }} header as={Link} to='/'>
+              ChatApp
+        </Menu.Item>
         {
-          user
-            ? <MainView />
-            : <LoginPage
-              setUser={setUser}
-            />
+          user ? 
+            <Menu.Menu position='right'>
+              <Menu.Item
+                name='logout'
+                onClick={() => logoutHandler()}
+              />
+            </Menu.Menu>
+            : null
         }
-      </Container>    
-    </Router>
+      </Menu>
+      <Switch>
+        <Route exact path='/user' render={() => (
+          <MainView setUser={setUser} />
+        )} />
+        <Route path='/' render={() => (
+          <LoginPage />
+        )} />
+      </Switch>
+    </Container>
+       
   )
 }
 
-export default App
+export default withRouter(App)

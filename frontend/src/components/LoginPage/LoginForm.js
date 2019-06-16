@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { withRouter } from 'react-router-dom'
 import { useMutation } from '@apollo/react-hooks'
 import { LOGIN } from '../../graphql/mutations'
 import { Link } from 'react-router-dom'
@@ -8,17 +9,16 @@ const LoginForm = (props) => {
   const [username, setUsername ] = useState('')
   const [password, setPassword ] = useState('')
 
-  const [login, { error, data }] = useMutation(LOGIN)
+  const [login] = useMutation(LOGIN)
   
   const submit = async (event) => {
     event.preventDefault()
 
     try {
-      const result = await login({
+      await login({
         variables: { username, password },
       })
-      const user = result.data.login
-      props.setUser(user) 
+      props.history.push('/user') 
     } catch (e) {
       props.graphqlError(e)
     }
@@ -54,4 +54,4 @@ const LoginForm = (props) => {
 
 } 
 
-export default LoginForm
+export default withRouter(LoginForm)

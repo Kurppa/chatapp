@@ -2,18 +2,25 @@ import React from 'react'
 import { useMutation } from '@apollo/react-hooks'
 import { ACCEPT_FRIEND, START_CHAT, REMOVE_FRIEND } from '../../../graphql/mutations'
 import { USER_DATA } from '../../../graphql/queries'
-import { Header, Segment, Icon } from 'semantic-ui-react'
+import { Header, Segment, Icon, Message } from 'semantic-ui-react'
 
-const Friends = ( { users, startConversation, removeFriend } ) => {
+const Friends = ( { data, startConversation, removeFriend } ) => {
+  const friendsWithStartedChat = data.chats.map(c => c.users)
+    .flat()
+    .filter(id => id !== data.id)
   return (
     <>
     <Header as='h2'>Friends</Header>
     {
-      users.map(u => (
+      data.friends.map(u => (
         <Segment inverted color='green' style={{ width: '100%' }} key={u.id}>
           <Header style={{ display: 'inline' }} as='h2'>{u.username}</Header>
           <Icon onClick={() => removeFriend({ variables: { id: u.id } })} size='big' style={ { float: 'right' } } name='cancel' color='red'/>
-          <Icon onClick={() => startConversation({ variables: { id: u.id } })} size='big' style={ { float: 'right' } } name='chat' />
+          {
+            friendsWithStartedChat.includes(u.id) ? 
+              null
+              : <Icon onClick={() => startConversation({ variables: { id: u.id } })} size='big' style={ { float: 'right' } } name='chat' />
+          }
         </Segment>
       ))  
     }
@@ -68,10 +75,25 @@ const FriendView = ( { data } ) => {
   })
 
   return(
+    <>
+    {
+      data.chats.length === 0 && data.friends.length > 0 ? 
+        <Segment>
+          <Message info>
+            <Message.Header>
+          Start chatting!
+            </Message.Header>
+            <p>
+              Click on the speech bubble to start a chat with a friend of yours!
+            </p>
+          </Message>
+        </Segment>
+        : null
+    }
     <Segment style={{ width: '100%' }}>
       {
         data.friends.length > 0 ? 
-          <Friends users={data.friends} startConversation={startConversation} removeFriend={removeFriend} />
+          <Friends data={data} startConversation={startConversation} removeFriend={removeFriend} />
           : null
       }
       {
@@ -85,6 +107,7 @@ const FriendView = ( { data } ) => {
           : null
       }
     </Segment>
+    </>
   )
 }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { withRouter } from 'react-router-dom'
 import { useQuery } from '@apollo/react-hooks'
 import { USER_DATA } from '../../graphql/queries'
 import Chat from './chat/ChatView'
@@ -23,14 +24,21 @@ const Content = ({ menu, data }) => {
   } 
 }
 
-const MainView = () => {
+const MainView = (props) => {
   const [menu, setMenu] = useState('chat')
 
-  const { data, loading } = useQuery(USER_DATA)
+  const { data, loading, error } = useQuery(USER_DATA)
 
   if (loading ) {
     return <div>loading...</div>
   }
+
+  if (error) {
+    props.history.push('/')
+    return <div></div>
+  }
+
+  props.setUser(data.getUserData.id)
 
   return (
     <Container>
@@ -56,4 +64,4 @@ const MainView = () => {
   )
 }
 
-export default MainView
+export default withRouter(MainView)
