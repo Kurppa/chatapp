@@ -1,4 +1,3 @@
-const https = require('https')
 const http = require('http')
 const { ApolloServer, AuthenticationError } = require('apollo-server-express')
 const express = require('express')
@@ -14,25 +13,22 @@ const { validateToken, findUser, findTokenFromWS } = require('./helpers')
 const { connectDb } = require('./config')
 const { typeDefs, resolvers} = require('./graphql/schema')
 
-const testRouter = require('./controllers/testController')
-
 const configurations = {
-  production: { ssl: true, port: 3000, hostname: 'paff.me' },
-  development: { ssl: false, port: 3000, hostname: 'localhost' }
+    production: { ssl: true, port: 3000, hostname: 'paff.me', cors: '' },
+  development: { ssl: false, port: 4000, hostname: 'localhost', cors: 'http://localhost:3000' }
 }
 
 const environment = process.env.NODE_ENV || 'production'
 const config = configurations[environment]
+
+console.log(config.cors)
 
 const apollo = new ApolloServer({ 
     typeDefs,
     resolvers,
     subscriptions: {
         onConnect: async (_, ws) => {
-            // try to get id token -> check that token is valid and decode -> find user
-            // rejected promise results in failed subscription
-            // approach quarantees that subscription resolver has always user available
-            // and that only logged in users can subscribe to newMessage
+            //allow connecting only with a valid id
             return findTokenFromWS(ws.upgradeReq)
                         .then(idCookie => validateToken(idCookie))
                         .then(token => findUser(token.id))
@@ -65,7 +61,7 @@ const apollo = new ApolloServer({
 const app = express()
 
 app.use(cors({
-    origin: 'http://paff.me',
+    origin: config.cors,
     credentials: true
 }))
 
@@ -73,7 +69,7 @@ app.use(cookieParser())
 
 app.use(morgan('tiny'))
 
-app.use('/static', express.static(path.join(__dirname, './build/static')))
+app.use(express.static('build'))
 
 app.get('/', (req, res, next) => {
     try {
@@ -92,10 +88,6 @@ app.get('/', (req, res, next) => {
     }
 })
 
-app.get('*', (req, res) => {
-	res.sendFile('index.html', { root: path.join(__dirname, './build/')})
-})
-
 apollo.applyMiddleware({ 
     app,
     cors: false,
@@ -108,7 +100,7 @@ apollo.installSubscriptionHandlers(server)
 connectDb()
     .then(async () => {
         server.listen({ port: config.port }, () => {
-             `http${config.ssl ? 's' : ''}://${config.hostname}:${config.port}${apollo.graphqlPath}`   
+             console.log(`http${config.ssl ? 's' : ''}://${config.hostname}:${config.port}${apollo.graphqlPath}`)
         }
         )
     })

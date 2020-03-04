@@ -11,7 +11,7 @@ const parentStyle = {
   justifyContent: 'flex-start',
   height: '100%',
   width: '100%',
-  padding: '0 1.5em 0 0 '
+  padding: '1rem'
 }
 
 const scrollableStyle = {
@@ -56,7 +56,7 @@ const Conversation = ( { chat, me } ) => {
   const renderMessage = (m) => {
     if (me.id === m.user) {
       return (
-        <Card style={{ width: '100%' }} key={m.id}>
+        <Card style={{ float: 'right', width: '60%', border: 'solid black 1px' }} key={m.id}>
           <Card.Content>
             <div style={{ float: 'right', maxWidth: '60%', wordWrap: 'break-word' }}>
               { m.text }
@@ -66,7 +66,7 @@ const Conversation = ( { chat, me } ) => {
       )
     } else {
       return (
-        <Card style={{ width: '100%' }} key={m.id} >
+        <Card style={{ width: '60%', border: 'solid black 1px'}} key={m.id} >
           <Card.Content>
             <div style={ { float: 'left ', maxWidth: '60%', wordWrap: 'break-word' } }>
               {m.text}
