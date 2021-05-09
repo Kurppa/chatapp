@@ -17,7 +17,7 @@
     "express-session": "^1.16.2",
     "graphql": "^14.3.0",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "mongoose": "^5.7.5",
     "mongoose-hidden": "^1.6.1",
     "mongoose-unique-validator": "^2.0.3",
